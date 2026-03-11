@@ -1,28 +1,25 @@
 package com.fantasylol.fantasy_api.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
+import com.fantasylol.fantasy_api.model.Jugador;
+import com.fantasylol.fantasy_api.repository.JugadorRepository;
 import org.springframework.web.bind.annotation.*;
 
-import com.fantasylol.fantasy_api.model.Jugador;
-import com.fantasylol.fantasy_api.service.MercadoService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/mercado")
 public class MercadoController {
 
-    private final MercadoService mercadoService;
+    private final JugadorRepository jugadorRepository;
 
-    public MercadoController(MercadoService mercadoService) {
-        this.mercadoService = mercadoService;
+    public MercadoController(JugadorRepository jugadorRepository) {
+        this.jugadorRepository = jugadorRepository;
     }
 
     @GetMapping("/{ligaId}")
-    public ResponseEntity<List<Jugador>> obtenerMercado(@PathVariable Long ligaId) {
+    public List<Jugador> obtenerMercado(@PathVariable Long ligaId) {
 
-        return ResponseEntity.ok(
-                mercadoService.obtenerMercado(ligaId)
-        );
+        return jugadorRepository.findByLigaIdAndEnMercadoTrue(ligaId);
+
     }
 }

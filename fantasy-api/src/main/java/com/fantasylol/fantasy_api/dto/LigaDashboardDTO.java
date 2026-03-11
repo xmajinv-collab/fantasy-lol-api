@@ -1,26 +1,44 @@
 package com.fantasylol.fantasy_api.dto;
 
+import java.util.List;
+
+import com.fantasylol.fantasy_api.model.Equipo;
+import com.fantasylol.fantasy_api.model.Jugador;
+
 public class LigaDashboardDTO {
 
-    private Long id;
-    private String nombre;
-    private boolean jornadaActiva;
+    private String nombreLiga;
+    private List<RankingDTO> ranking;
+    private List<Equipo> equipos;
+    private List<Jugador> mercado;
 
-    public LigaDashboardDTO(Long id, String nombre, boolean jornadaActiva){
-        this.id = id;
-        this.nombre = nombre;
-        this.jornadaActiva = jornadaActiva;
+    public LigaDashboardDTO(
+            String nombreLiga,
+            List<RankingDTO> ranking,
+            List<Equipo> equipos,
+            List<Jugador> mercado) {
+
+        this.nombreLiga = nombreLiga;
+        this.ranking = ranking;
+        this.equipos = equipos;
+        this.mercado = mercado;
+
     }
 
-    public Long getId(){
-        return id;
+    public String getNombreLiga() {
+        return nombreLiga;
     }
 
-    public String getNombre(){
-        return nombre;
+    public List<RankingDTO> getRanking() {
+        return ranking;
     }
 
-    public boolean isJornadaActiva(){
-        return jornadaActiva;
+    public List<Equipo> getEquipos() {
+        return equipos;
     }
+
+    public List<Jugador> getMercado() {
+        return mercado;
+    }
+
 }

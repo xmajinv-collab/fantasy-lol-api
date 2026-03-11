@@ -2,37 +2,19 @@ package com.fantasylol.fantasy_api.dto;
 
 public class RankingDTO {
 
-    private int posicion;
-    private String nombreEquipo;
-    private int puntosTotales;
-    private double presupuesto;
-    private int totalJugadores;
+    private String equipo;
+    private int puntos;
 
-    public RankingDTO(int posicion, String nombreEquipo, int puntosTotales, double presupuesto, int totalJugadores) {
-        this.posicion = posicion;
-        this.nombreEquipo = nombreEquipo;
-        this.puntosTotales = puntosTotales;
-        this.presupuesto = presupuesto;
-        this.totalJugadores = totalJugadores;
+    public RankingDTO(String equipo, int puntos) {
+        this.equipo = equipo;
+        this.puntos = puntos;
     }
 
-    public int getPosicion() {
-        return posicion;
+    public String getEquipo() {
+        return equipo;
     }
 
-    public String getNombreEquipo() {
-        return nombreEquipo;
-    }
-
-    public int getPuntosTotales() {
-        return puntosTotales;
-    }
-
-    public double getPresupuesto() {
-        return presupuesto;
-    }
-
-    public int getTotalJugadores() {
-        return totalJugadores;
+    public int getPuntos() {
+        return puntos;
     }
 }

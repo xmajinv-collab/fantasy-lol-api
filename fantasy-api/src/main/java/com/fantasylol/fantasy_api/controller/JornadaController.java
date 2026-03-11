@@ -1,25 +1,24 @@
 package com.fantasylol.fantasy_api.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fantasylol.fantasy_api.service.JornadaService;
+import com.fantasylol.fantasy_api.service.PuntuacionService;
 
 @RestController
 @RequestMapping("/api/jornadas")
 public class JornadaController {
 
-    private final JornadaService jornadaService;
+    private final PuntuacionService puntuacionService;
 
-    public JornadaController(JornadaService jornadaService){
-        this.jornadaService = jornadaService;
+    public JornadaController(PuntuacionService puntuacionService) {
+        this.puntuacionService = puntuacionService;
     }
 
-    @PostMapping("/{ligaId}/cerrar")
-    public ResponseEntity<String> cerrarJornada(@PathVariable Long ligaId){
+    @PostMapping("/{jornadaId}/calcular")
+    public String calcularJornada(@PathVariable Long jornadaId) {
 
-        jornadaService.cerrarJornada(ligaId);
+        puntuacionService.calcularJornada(jornadaId);
 
-        return ResponseEntity.ok("Jornada cerrada correctamente");
+        return "Jornada calculada correctamente";
     }
 }

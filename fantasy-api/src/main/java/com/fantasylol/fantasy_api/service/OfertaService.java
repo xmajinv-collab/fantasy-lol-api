@@ -3,45 +3,76 @@ package com.fantasylol.fantasy_api.service;
 import org.springframework.stereotype.Service;
 
 import com.fantasylol.fantasy_api.exception.ResourceNotFoundException;
+import com.fantasylol.fantasy_api.model.Equipo;
 import com.fantasylol.fantasy_api.model.Jugador;
 import com.fantasylol.fantasy_api.model.Oferta;
-import com.fantasylol.fantasy_api.model.Usuario;
+import com.fantasylol.fantasy_api.repository.EquipoRepository;
 import com.fantasylol.fantasy_api.repository.JugadorRepository;
 import com.fantasylol.fantasy_api.repository.OfertaRepository;
-import com.fantasylol.fantasy_api.repository.UsuarioRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class OfertaService {
 
     private final OfertaRepository ofertaRepository;
     private final JugadorRepository jugadorRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final EquipoRepository equipoRepository;
 
     public OfertaService(
             OfertaRepository ofertaRepository,
             JugadorRepository jugadorRepository,
-            UsuarioRepository usuarioRepository){
+            EquipoRepository equipoRepository) {
 
         this.ofertaRepository = ofertaRepository;
         this.jugadorRepository = jugadorRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.equipoRepository = equipoRepository;
     }
 
-    public Oferta crearOferta(Long jugadorId,double cantidad,String username){
+    @Transactional
+    public void aceptarOferta(Long ofertaId) {
 
-        Jugador jugador = jugadorRepository
-                .findById(jugadorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Jugador no encontrado"));
+        Oferta oferta = ofertaRepository
+                .findById(ofertaId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Oferta no encontrada"));
 
-        Usuario usuario = usuarioRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        Jugador jugador = oferta.getJugador();
+        Equipo comprador = oferta.getEquipo();
 
-        Oferta oferta = new Oferta();
-        oferta.setCantidad(cantidad);
-        oferta.setJugador(jugador);
-        oferta.setUsuario(usuario);
+        if (comprador.getPresupuesto() < oferta.getCantidad()) {
+            throw new IllegalStateException("No tienes presupuesto suficiente");
+        }
 
-        return ofertaRepository.save(oferta);
+        comprador.setPresupuesto(
+                comprador.getPresupuesto() - oferta.getCantidad()
+        );
+
+        jugador.setEquipo(comprador);
+        jugador.setEnMercado(false);
+
+        equipoRepository.save(comprador);
+        jugadorRepository.save(jugador);
+
+        ofertaRepository.delete(oferta);
     }
+    @Transactional
+    public Oferta crearOferta(Long jugadorId, double cantidad, String username) {
+
+    Jugador jugador = jugadorRepository
+            .findById(jugadorId)
+            .orElseThrow(() -> new RuntimeException("Jugador no encontrado"));
+
+    Equipo equipo = equipoRepository
+            .findByUsuarioUsername(username)
+            .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+
+    Oferta oferta = new Oferta();
+
+    oferta.setJugador(jugador);
+    oferta.setEquipo(equipo);
+    oferta.setCantidad(cantidad);
+
+    return ofertaRepository.save(oferta);
+}
 }

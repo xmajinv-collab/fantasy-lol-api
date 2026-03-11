@@ -1,9 +1,8 @@
 package com.fantasylol.fantasy_api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -11,12 +10,13 @@ import com.fantasylol.fantasy_api.dto.LigaDashboardDTO;
 import com.fantasylol.fantasy_api.dto.RankingDTO;
 import com.fantasylol.fantasy_api.exception.ResourceNotFoundException;
 import com.fantasylol.fantasy_api.model.Equipo;
+import com.fantasylol.fantasy_api.model.Jugador;
 import com.fantasylol.fantasy_api.model.Liga;
 import com.fantasylol.fantasy_api.model.Usuario;
 import com.fantasylol.fantasy_api.repository.EquipoRepository;
 import com.fantasylol.fantasy_api.repository.LigaRepository;
 import com.fantasylol.fantasy_api.repository.UsuarioRepository;
-import com.fantasylol.fantasy_api.dto.LigaDashboardDTO;
+import com.fantasylol.fantasy_api.repository.JugadorRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -24,143 +24,151 @@ import jakarta.transaction.Transactional;
 public class LigaService {
 
     private final LigaRepository ligaRepository;
-    private final EquipoRepository equipoRepository;
     private final UsuarioRepository usuarioRepository;
-
+    private final EquipoRepository equipoRepository;
+    private final JugadorRepository jugadorRepository;
     public LigaService(
             LigaRepository ligaRepository,
+            UsuarioRepository usuarioRepository,
             EquipoRepository equipoRepository,
-            UsuarioRepository usuarioRepository) {
+            JugadorRepository jugadorRepository){
+
 
         this.ligaRepository = ligaRepository;
-        this.equipoRepository = equipoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.equipoRepository = equipoRepository;
+        this.jugadorRepository = jugadorRepository;
     }
 
-    // =====================================
     // CREAR LIGA
-    // =====================================
 
-    @Transactional
-    public Liga crearLiga(String nombre, String username) {
+    public Liga crearLiga(String nombre, String username){
 
-        Usuario usuario = usuarioRepository
-                .findByUsername(username)
+        Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         Liga liga = new Liga();
         liga.setNombre(nombre);
+        liga.setCodigoInvitacion(UUID.randomUUID().toString());
         liga.setUsuario(usuario);
         liga.setJornadaActiva(false);
 
-        ligaRepository.save(liga);
-
-        // Crear equipo automáticamente
-        Equipo equipo = new Equipo("Equipo de " + username, 10000000);
-        equipo.setUsuario(usuario);
-        equipo.setLiga(liga);
-
-        equipoRepository.save(equipo);
-
-        return liga;
+        return ligaRepository.save(liga);
     }
 
-    // =====================================
-    // LISTAR LIGAS DEL USUARIO
-    // =====================================
+    // LISTAR LIGAS
 
-    public List<Liga> listarLigasPorUsuario(String username) {
+    public List<Liga> listarLigasPorUsuario(String username){
 
-        return ligaRepository.findByUsuarioUsername(username);
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        return ligaRepository.findByUsuario(usuario);
     }
 
-    // =====================================
     // OBTENER LIGA
-    // =====================================
 
-    public Liga obtenerLiga(Long id) {
+    public Liga obtenerLiga(Long id){
 
-        return ligaRepository
-                .findById(id)
+        return ligaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
     }
 
-    // =====================================
     // ELIMINAR LIGA
-    // =====================================
 
-    public void eliminarLiga(Long id) {
+    public void eliminarLiga(Long id){
 
-        Liga liga = obtenerLiga(id);
+        Liga liga = ligaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
 
         ligaRepository.delete(liga);
     }
 
-    // =====================================
     // UNIRSE A LIGA
-    // =====================================
 
     @Transactional
-    public void unirseLiga(String codigoInvitacion, String username) {
+    public void unirseLiga(String codigo, String username){
 
-        Liga liga = ligaRepository
-                .findByCodigoInvitacion(codigoInvitacion)
+        Liga liga = ligaRepository.findByCodigoInvitacion(codigo)
                 .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
 
-        Usuario usuario = usuarioRepository
-                .findByUsername(username)
+        Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        Equipo equipo = new Equipo("Equipo de " + username, 10000000);
-        equipo.setUsuario(usuario);
+        Equipo equipo = new Equipo();
+        equipo.setNombre("Equipo de " + usuario.getUsername());
+        equipo.setPresupuesto(10000000);
+        equipo.setPuntosTotales(0);
         equipo.setLiga(liga);
+        equipo.setUsuario(usuario);
 
         equipoRepository.save(equipo);
     }
 
-    // =====================================
-    // RANKING
-    // =====================================
+    // GENERAR CODIGO INVITACION
 
-    public List<RankingDTO> obtenerRanking(Long ligaId) {
+    public String generarCodigoInvitacion(Long ligaId){
 
-        List<Equipo> equipos =
-                equipoRepository.findByLigaIdOrderByPuntosTotalesDesc(ligaId);
+        Liga liga = ligaRepository.findById(ligaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
 
-        AtomicInteger posicion = new AtomicInteger(1);
+        String codigo = UUID.randomUUID().toString();
 
-        return equipos.stream()
-                .map(e -> new RankingDTO(
-                        posicion.getAndIncrement(),
-                        e.getNombre(),
-                        e.getPuntosTotales(),
-                        e.getPresupuesto(),
-                        e.getJugadores().size()
-                ))
-                .collect(Collectors.toList());
+        liga.setCodigoInvitacion(codigo);
+
+        ligaRepository.save(liga);
+
+        return codigo;
     }
-   public LigaDashboardDTO obtenerDashboard(Long ligaId, String username){
+    // RANKING DE LA LIGA
+
+public List<RankingDTO> obtenerRanking(Long ligaId) {
+
+    List<Equipo> equipos = equipoRepository.findByLigaId(ligaId);
+
+    List<RankingDTO> ranking = new ArrayList<>();
+
+    for (Equipo equipo : equipos) {
+
+        int puntosEquipo = equipo.getJugadores().stream()
+                .filter(Jugador::isTitular)
+                .mapToInt(Jugador::getPuntosTotales)
+                .sum();
+
+        ranking.add(new RankingDTO(
+                equipo.getNombre(),
+                puntosEquipo
+        ));
+    }
+
+    ranking.sort((a, b) -> Integer.compare(b.getPuntos(), a.getPuntos()));
+
+    return ranking;
+}
+
+
+    // DASHBOARD DE USUARIO
+
+   public LigaDashboardDTO obtenerDashboard(Long ligaId, String username) {
 
     Liga liga = ligaRepository
             .findById(ligaId)
-            .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
+            .orElseThrow(() ->
+                    new RuntimeException("Liga no encontrada"));
 
-        return new LigaDashboardDTO(
-                liga.getId(),
-                liga.getNombre(),
-                liga.isJornadaActiva()
-        );
-        }
-        public String generarCodigoInvitacion(Long ligaId) {
+    List<RankingDTO> ranking = obtenerRanking(ligaId);
 
-            Liga liga = ligaRepository
-                    .findById(ligaId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Liga no encontrada"));
+    List<Equipo> equipos =
+            equipoRepository.findByLigaId(ligaId);
 
-            String codigo = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                liga.setCodigoInvitacion(codigo);
-                ligaRepository.save(liga);
+    List<Jugador> mercado =
+            jugadorRepository.findByLigaIdAndEnMercadoTrue(ligaId);
 
-            return codigo;
-        }
+    return new LigaDashboardDTO(
+            liga.getNombre(),
+            ranking,
+            equipos,
+            mercado
+    );
+}
 }

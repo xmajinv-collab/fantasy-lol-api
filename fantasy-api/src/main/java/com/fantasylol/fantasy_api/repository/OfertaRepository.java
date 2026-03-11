@@ -5,14 +5,12 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.fantasylol.fantasy_api.model.Jugador;
 import com.fantasylol.fantasy_api.model.Oferta;
 
-public interface OfertaRepository extends JpaRepository<Oferta,Long>{
+public interface OfertaRepository extends JpaRepository<Oferta, Long>{
 
-    List<Oferta> findByEquipoLigaUsuarioUsername(String username);
-
-    List<Oferta> findByEquipoIdAndEquipoLigaUsuarioUsername(Long equipoId,String username);
-
-    Optional<Oferta> findByIdAndEquipoLigaUsuarioUsername(Long id,String username);
-
+    List<Oferta> findByJugadorOrderByCantidadDesc(Jugador jugador);
+    
+    Optional<Oferta> findTopByJugadorOrderByCantidadDesc(Jugador jugador);
 }

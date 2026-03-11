@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.fantasylol.fantasy_api.model.Equipo;
 import com.fantasylol.fantasy_api.model.Liga;
+import com.fantasylol.fantasy_api.model.Usuario;
+
 
 public interface EquipoRepository extends JpaRepository<Equipo, Long> {
 
@@ -31,5 +33,11 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
     // EQUIPO DEL USUARIO EN LIGA
     // ==========================
     Optional<Equipo> findByLigaIdAndUsuarioUsername(Long ligaId, String username);
+
+    Optional<Equipo> findByUsuario(Usuario usuario);
+
+    List<Equipo> findByLigaId(Long ligaId);
+
+    Optional<Equipo> findByUsuarioUsername(String username);
 
 }

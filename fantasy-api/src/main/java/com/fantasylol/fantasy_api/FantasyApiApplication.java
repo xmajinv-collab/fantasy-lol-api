@@ -11,4 +11,5 @@ public class FantasyApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(FantasyApiApplication.class, args);
     }
+
 }

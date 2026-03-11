@@ -25,6 +25,9 @@ public class Jugador {
 
     private LocalDateTime fechaFinSubasta;
 
+    private int getpuntosTotales = 0;
+        
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipo_id")
     private Equipo equipo;
@@ -109,5 +112,11 @@ public class Jugador {
 
     public void setLiga(Liga liga){
         this.liga = liga;
+    }
+    public int getPuntosTotales() {
+       return getpuntosTotales;
+    }
+    public void setPuntosTotales(int puntosTotales) {
+        this.getpuntosTotales = puntosTotales;
     }
 }
