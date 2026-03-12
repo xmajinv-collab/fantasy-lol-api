@@ -14,7 +14,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .cors(cors -> {})
+            .cors(cors -> {}) // ACTIVA CORS
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
