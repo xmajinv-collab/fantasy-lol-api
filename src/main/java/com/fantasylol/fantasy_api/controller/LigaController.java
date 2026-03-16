@@ -10,15 +10,19 @@ import com.fantasylol.fantasy_api.dto.LigaDashboardDTO;
 import com.fantasylol.fantasy_api.dto.RankingDTO;
 import com.fantasylol.fantasy_api.model.Liga;
 import com.fantasylol.fantasy_api.service.LigaService;
+import com.fantasylol.fantasy_api.model.Jugador;
+import com.fantasylol.fantasy_api.repository.JugadorRepository;
 
 @RestController
 @RequestMapping("/api/ligas")
 public class LigaController {
 
     private final LigaService ligaService;
+    private final JugadorRepository jugadorRepository;
 
-    public LigaController(LigaService ligaService) {
+    public LigaController(LigaService ligaService, JugadorRepository jugadorRepository) {
         this.ligaService = ligaService;
+        this.jugadorRepository = jugadorRepository;
     }
 
     // ============================
@@ -28,7 +32,8 @@ public class LigaController {
     @PostMapping
     public ResponseEntity<Liga> crearLiga(
             @RequestParam String nombre,
-            Principal principal) {
+            Principal principal
+    ) {
 
         Liga liga = ligaService.crearLiga(nombre, principal.getName());
 
@@ -40,9 +45,10 @@ public class LigaController {
     // ============================
 
     @PostMapping("/unirse")
-    public ResponseEntity<?> unirseLiga(
+    public ResponseEntity<String> unirseLiga(
             @RequestParam String codigo,
-            Principal principal) {
+            Principal principal
+    ) {
 
         ligaService.unirseLiga(codigo, principal.getName());
 
@@ -55,7 +61,8 @@ public class LigaController {
 
     @GetMapping
     public ResponseEntity<List<Liga>> listarLigasUsuario(
-            Principal principal) {
+            Principal principal
+    ) {
 
         List<Liga> ligas =
                 ligaService.listarLigasPorUsuario(principal.getName());
@@ -69,7 +76,8 @@ public class LigaController {
 
     @GetMapping("/{ligaId}")
     public ResponseEntity<Liga> obtenerLiga(
-            @PathVariable Long ligaId) {
+            @PathVariable Long ligaId
+    ) {
 
         Liga liga = ligaService.obtenerLiga(ligaId);
 
@@ -77,12 +85,13 @@ public class LigaController {
     }
 
     // ============================
-    // RANKING
+    // RANKING DE LIGA
     // ============================
 
     @GetMapping("/{ligaId}/ranking")
     public ResponseEntity<List<RankingDTO>> ranking(
-            @PathVariable Long ligaId) {
+            @PathVariable Long ligaId
+    ) {
 
         List<RankingDTO> ranking =
                 ligaService.obtenerRanking(ligaId);
@@ -91,18 +100,32 @@ public class LigaController {
     }
 
     // ============================
-    // DASHBOARD LIGA
+    // DASHBOARD DE LIGA
     // ============================
 
     @GetMapping("/{ligaId}/dashboard")
     public ResponseEntity<LigaDashboardDTO> dashboard(
             @PathVariable Long ligaId,
-            Principal principal) {
+            Principal principal
+    ) {
 
         LigaDashboardDTO dashboard =
-                ligaService.obtenerDashboard(ligaId, principal.getName());
+                ligaService.obtenerDashboard(
+                        ligaId,
+                        principal.getName()
+                );
 
         return ResponseEntity.ok(dashboard);
     }
 
+    @GetMapping("/{ligaId}/mercado")
+    public ResponseEntity<List<Jugador>> mercado(
+            @PathVariable Long ligaId
+    ) {
+
+        List<Jugador> mercado =
+                jugadorRepository.findByLigaIdAndEnMercadoTrue(ligaId);
+
+        return ResponseEntity.ok(mercado);
+    }
 }

@@ -17,17 +17,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UsuarioRepository usuarioRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+    public AuthService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
-    // =====================================
+    // ============================
     // REGISTER
-    // =====================================
+    // ============================
+
     public Usuario register(RegisterRequest request) {
 
         if (usuarioRepository.existsByUsername(request.getUsername())) {
@@ -37,27 +40,25 @@ public class AuthService {
         Usuario usuario = new Usuario();
         usuario.setUsername(request.getUsername());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRole(Role.ROLE_USER); // 🔐 Asignamos rol por defecto
+        usuario.setRole(Role.ROLE_USER);
 
         return usuarioRepository.save(usuario);
     }
 
-    // =====================================
+    // ============================
     // LOGIN
-    // =====================================
+    // ============================
+
     public String login(LoginRequest request) {
 
-        Usuario usuario = usuarioRepository.findByUsername(request.getUsername())
+        Usuario usuario = usuarioRepository
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new IllegalArgumentException("Credenciales inválidas");
         }
 
-        // 🔐 Ahora enviamos también el rol al JWT
-        return jwtService.generateToken(
-                usuario.getUsername(),
-                usuario.getRole().name()
-        );
+        return jwtService.generateToken(usuario.getUsername());
     }
 }

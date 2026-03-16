@@ -40,4 +40,6 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
 
     Optional<Equipo> findByUsuarioUsername(String username);
 
+    boolean existsByLigaAndUsuario(Liga liga, Usuario usuario);
+
 }

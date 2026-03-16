@@ -119,4 +119,8 @@ public class Jugador {
     public void setPuntosTotales(int puntosTotales) {
         this.getpuntosTotales = puntosTotales;
     }
+
+    public void setValor(int valor) {
+        this.precio = valor;
+    }   
 }

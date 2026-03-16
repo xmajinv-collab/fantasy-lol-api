@@ -20,11 +20,10 @@ public class EquipoService {
 
     public EquipoService(
             EquipoRepository equipoRepository,
-            JugadorRepository jugadorRepository) {
-
+            JugadorRepository jugadorRepository
+    ) {
         this.equipoRepository = equipoRepository;
         this.jugadorRepository = jugadorRepository;
-
     }
 
     // ============================
@@ -37,7 +36,6 @@ public class EquipoService {
                 .findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Equipo no encontrado"));
-
     }
 
     // ============================
@@ -47,28 +45,10 @@ public class EquipoService {
     public List<Jugador> jugadoresEquipo(Long equipoId) {
 
         return jugadorRepository.findByEquipoId(equipoId);
-
     }
 
     // ============================
-    // PONER TITULAR
-    // ============================
-
-    public void ponerTitular(Long jugadorId) {
-
-        Jugador jugador =
-                jugadorRepository.findById(jugadorId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Jugador no encontrado"));
-
-        jugador.setTitular(!jugador.isTitular());
-
-        jugadorRepository.save(jugador);
-
-    }
-
-    // ============================
-    // ALINEAR JUGADOR CON SEGURIDAD
+    // ALINEAR JUGADOR
     // ============================
 
     @Transactional
@@ -78,6 +58,11 @@ public class EquipoService {
                 .findById(equipoId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Equipo no encontrado"));
+
+        // Seguridad: comprobar propietario
+        if (!equipo.getUsuario().getUsername().equals(username)) {
+            throw new IllegalStateException("No puedes modificar este equipo");
+        }
 
         Jugador jugador = jugadorRepository
                 .findById(jugadorId)
@@ -91,6 +76,7 @@ public class EquipoService {
         long titulares = jugadorRepository
                 .countByEquipoIdAndTitularTrue(equipoId);
 
+        // Limite titulares
         if (!jugador.isTitular() && titulares >= 5) {
             throw new IllegalStateException("Solo puedes tener 5 titulares");
         }
@@ -100,4 +86,14 @@ public class EquipoService {
         jugadorRepository.save(jugador);
     }
 
+    public void ponerTitular(Long jugadorId) {
+        Jugador jugador = jugadorRepository
+                .findById(jugadorId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Jugador no encontrado"));
+
+        jugador.setTitular(true);
+
+        jugadorRepository.save(jugador);
+    }
 }

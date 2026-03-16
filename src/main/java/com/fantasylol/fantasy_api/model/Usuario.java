@@ -1,8 +1,8 @@
 package com.fantasylol.fantasy_api.model;
 
-import java.util.List;
-
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -19,16 +19,20 @@ public class Usuario {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.ROLE_USER;
 
     @OneToMany(mappedBy = "usuario")
     private List<Equipo> equipos;
 
     // ======================
-    // CONSTRUCTORES
+    // CONSTRUCTOR VACÍO
     // ======================
 
     public Usuario() {}
+
+    // ======================
+    // CONSTRUCTORES
+    // ======================
 
     public Usuario(String username, String password) {
         this.username = username;
