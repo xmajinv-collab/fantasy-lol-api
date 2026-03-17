@@ -2,6 +2,7 @@ package com.fantasylol.fantasy_api.controller;
 
 import com.fantasylol.fantasy_api.model.Jugador;
 import com.fantasylol.fantasy_api.repository.JugadorRepository;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,10 +17,15 @@ public class MercadoController {
         this.jugadorRepository = jugadorRepository;
     }
 
+    // =============================
+    // OBTENER MERCADO POR LIGA
+    // =============================
+
     @GetMapping("/{ligaId}")
     public List<Jugador> obtenerMercado(@PathVariable Long ligaId) {
 
-        return jugadorRepository.findByLigaIdAndEnMercadoTrue(ligaId);
+        return jugadorRepository
+                .findByLigaIdAndEnMercadoTrueAndEquipoIsNull(ligaId);
 
     }
 }

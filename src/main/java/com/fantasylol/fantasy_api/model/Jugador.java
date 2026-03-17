@@ -25,8 +25,7 @@ public class Jugador {
 
     private LocalDateTime fechaFinSubasta;
 
-    private int getpuntosTotales = 0;
-        
+    private int puntosTotales = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipo_id")
@@ -36,91 +35,108 @@ public class Jugador {
     @JoinColumn(name = "liga_id")
     private Liga liga;
 
-    public Jugador(){}
+    // =============================
+    // CONSTRUCTORES
+    // =============================
 
-    public Jugador(String nombre,double precio,Long pandaScoreId){
+    public Jugador() {}
+
+    public Jugador(String nombre, double precio, Long pandaScoreId) {
         this.nombre = nombre;
         this.precio = precio;
         this.pandaScoreId = pandaScoreId;
+
         this.titular = false;
-        this.enMercado = false;
+
+        // 🔥 IMPORTANTE → YA EN MERCADO
+        this.enMercado = true;
     }
 
-    public Long getId(){
+    // =============================
+    // GETTERS
+    // =============================
+
+    public Long getId() {
         return id;
     }
 
-    public String getNombre(){
+    public String getNombre() {
         return nombre;
     }
 
-    public double getPrecio(){
+    public double getPrecio() {
         return precio;
     }
 
-    public boolean isTitular(){
+    public boolean isTitular() {
         return titular;
     }
 
-    public boolean isEnMercado(){
+    public boolean isEnMercado() {
         return enMercado;
     }
 
-    public Long getPandaScoreId(){
+    public Long getPandaScoreId() {
         return pandaScoreId;
     }
 
-    public LocalDateTime getFechaFinSubasta(){
+    public LocalDateTime getFechaFinSubasta() {
         return fechaFinSubasta;
     }
 
-    public Equipo getEquipo(){
+    public Equipo getEquipo() {
         return equipo;
     }
 
-    public Liga getLiga(){
+    public Liga getLiga() {
         return liga;
     }
 
-    public void setNombre(String nombre){
+    public int getPuntosTotales() {
+        return puntosTotales;
+    }
+
+    // =============================
+    // SETTERS
+    // =============================
+
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public void setPrecio(double precio){
+    public void setPrecio(double precio) {
         this.precio = precio;
     }
 
-    public void setTitular(boolean titular){
+    public void setTitular(boolean titular) {
         this.titular = titular;
     }
 
-    public void setEnMercado(boolean enMercado){
+    public void setEnMercado(boolean enMercado) {
         this.enMercado = enMercado;
     }
 
-    public void setPandaScoreId(Long pandaScoreId){
+    public void setPandaScoreId(Long pandaScoreId) {
         this.pandaScoreId = pandaScoreId;
     }
 
-    public void setFechaFinSubasta(LocalDateTime fechaFinSubasta){
+    public void setFechaFinSubasta(LocalDateTime fechaFinSubasta) {
         this.fechaFinSubasta = fechaFinSubasta;
     }
 
-    public void setEquipo(Equipo equipo){
+    public void setEquipo(Equipo equipo) {
         this.equipo = equipo;
     }
 
-    public void setLiga(Liga liga){
+    public void setLiga(Liga liga) {
         this.liga = liga;
     }
-    public int getPuntosTotales() {
-       return getpuntosTotales;
-    }
+
     public void setPuntosTotales(int puntosTotales) {
-        this.getpuntosTotales = puntosTotales;
+        this.puntosTotales = puntosTotales;
     }
 
-    public void setValor(int valor) {
+    public void setValor(double valor) {
         this.precio = valor;
-    }   
+    }
 }

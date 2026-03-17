@@ -51,6 +51,8 @@ public class PandaScoreService {
             jugador.setValor(1000000);
             jugador.setPuntosTotales(0);
             jugador.setEnMercado(true);
+            
+            
 
             jugadorRepository.save(jugador);
         }

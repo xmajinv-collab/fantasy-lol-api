@@ -34,18 +34,30 @@ public class PuntuacionService {
         this.equipoRepository = equipoRepository;
     }
 
+    // =============================
+    // CALCULAR JORNADA
+    // =============================
+
     public void calcularJornada(Long jornadaId) {
 
         Jornada jornada = jornadaRepository
                 .findById(jornadaId)
                 .orElseThrow();
 
+        // 🔥 SOLO titulares de esa liga
         List<Jugador> titulares =
-                jugadorRepository.findByTitularTrue();
+        jugadorRepository.findByTitularTrue()
+                .stream()
+                .filter(j -> j.getLiga() != null &&
+                             j.getLiga().getId().equals(jornada.getLiga().getId()))
+                .toList();
 
         Random random = new Random();
 
         for (Jugador jugador : titulares) {
+
+            // Evitar errores
+            if (jugador.getEquipo() == null) continue;
 
             int kills = random.nextInt(10);
             int assists = random.nextInt(15);
@@ -53,6 +65,7 @@ public class PuntuacionService {
 
             int puntos = (kills * 3) + (assists * 2) - deaths;
 
+            // Guardar puntuación jornada
             PuntuacionJornada pj = new PuntuacionJornada(
                     jugador,
                     jornada,
@@ -64,6 +77,13 @@ public class PuntuacionService {
 
             puntuacionRepository.save(pj);
 
+            // 🔥 sumar al jugador
+            jugador.setPuntosTotales(
+                    jugador.getPuntosTotales() + puntos
+            );
+            jugadorRepository.save(jugador);
+
+            // 🔥 sumar al equipo
             Equipo equipo = jugador.getEquipo();
 
             equipo.setPuntosTotales(

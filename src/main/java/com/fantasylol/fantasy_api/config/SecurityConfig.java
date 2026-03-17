@@ -17,6 +17,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -31,53 +37,50 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // Desactivar CSRF porque usamos JWT
+            // 🔴 Desactivar CSRF (API REST)
             .csrf(csrf -> csrf.disable())
 
-            // Permitir CORS
+            // 🟢 CORS bien configurado
             .cors(cors -> {})
 
-            // No usar sesiones (API REST)
+            // 🔴 Sin sesiones
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            // Configuración de permisos
+            // 🔐 Seguridad endpoints
             .authorizeHttpRequests(auth -> auth
 
-                // Endpoints públicos
+                // Públicos
                 .requestMatchers(
                         "/api/auth/**",
                         "/api/pandascore/**",
+                        "/api/debug/**",
                         "/error"
                 ).permitAll()
 
-                // Todo lo demás requiere token
+                // Todo lo demás protegido
                 .anyRequest().authenticated()
             )
 
-            // Añadir filtro JWT
+            // 🔐 Filtro JWT
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Encriptador de contraseñas
+    // 🔐 Password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
-
     }
 
-    // Authentication Manager
+    // 🔐 Auth manager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
-
         return config.getAuthenticationManager();
-
     }
-
+   
 }

@@ -8,6 +8,7 @@ import com.fantasylol.fantasy_api.repository.JugadorRepository;
 import com.fantasylol.fantasy_api.repository.OfertaRepository;
 import com.fantasylol.fantasy_api.repository.EquipoRepository;
 import com.fantasylol.fantasy_api.repository.LigaRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,12 +29,15 @@ public class MercadoService {
                           EquipoRepository equipoRepository,
                           LigaRepository ligaRepository) {
 
-
         this.jugadorRepository = jugadorRepository;
         this.ofertaRepository = ofertaRepository;
         this.equipoRepository = equipoRepository;
         this.ligaRepository = ligaRepository;
     }
+
+    // =============================
+    // MANTENIMIENTO MERCADO
+    // =============================
 
     public void mantenimientoMercado(Long ligaId) {
 
@@ -42,12 +46,11 @@ public class MercadoService {
 
         int mercadoObjetivo = 20;
 
-        if (jugadoresEnMercado >= mercadoObjetivo) {
-            return;
-        }
+        if (jugadoresEnMercado >= mercadoObjetivo) return;
 
         List<Jugador> disponibles =
-                jugadorRepository.findByLigaIdAndEnMercadoFalseAndEquipoIsNull(ligaId);
+                jugadorRepository
+                        .findByLigaIdAndEnMercadoFalseAndEquipoIsNull(ligaId);
 
         Collections.shuffle(disponibles);
 
@@ -56,21 +59,24 @@ public class MercadoService {
         disponibles.stream()
                 .limit(faltan)
                 .forEach(jugador -> {
-
                     jugador.setEnMercado(true);
-
                     jugador.setFechaFinSubasta(
                             LocalDateTime.now().plusHours(12)
                     );
-
-                    jugadorRepository.save(jugador);
                 });
+
+        jugadorRepository.saveAll(disponibles);
     }
+
+    // =============================
+    // RESOLVER SUBASTAS
+    // =============================
 
     public void resolverSubastas() {
 
         List<Jugador> jugadores =
-                jugadorRepository.findByEnMercadoTrueAndFechaFinSubastaBefore(LocalDateTime.now());
+                jugadorRepository
+                        .findByEnMercadoTrueAndFechaFinSubastaBefore(LocalDateTime.now());
 
         for (Jugador jugador : jugadores) {
 
@@ -80,37 +86,52 @@ public class MercadoService {
             if (mejorOferta.isPresent()) {
 
                 Oferta oferta = mejorOferta.get();
-
                 Equipo equipo = oferta.getEquipo();
 
+                // 💰 restar dinero
                 equipo.setPresupuesto(
                         equipo.getPresupuesto() - oferta.getCantidad()
                 );
 
                 equipoRepository.save(equipo);
 
+                // 🧠 asignar jugador
                 jugador.setEquipo(equipo);
             }
 
             jugador.setEnMercado(false);
+            jugador.setFechaFinSubasta(null);
 
             jugadorRepository.save(jugador);
         }
     }
 
+    // =============================
+    // GENERAR MERCADO DIARIO
+    // =============================
+
     public void generarMercadoDiario() {
+
         List<Liga> ligas = ligaRepository.findAll();
-        for (Liga liga : ligas){ List<Jugador> jugadores=
-            jugadorRepository.findByLigaId(liga.getId());
 
-            Collections.shuffle(jugadores);
+        for (Liga liga : ligas) {
 
-            jugadores.stream()
-            .limit(5)
-            .forEach(jugador -> {
-                jugador.setEnMercado(true);
-                jugadorRepository.save(jugador);
-        });
+            List<Jugador> disponibles =
+                    jugadorRepository
+                            .findByLigaIdAndEnMercadoFalseAndEquipoIsNull(liga.getId());
+
+            Collections.shuffle(disponibles);
+
+            disponibles.stream()
+                    .limit(5)
+                    .forEach(jugador -> {
+                        jugador.setEnMercado(true);
+                        jugador.setFechaFinSubasta(
+                                LocalDateTime.now().plusHours(12)
+                        );
+                    });
+
+            jugadorRepository.saveAll(disponibles);
         }
     }
 }

@@ -1,23 +1,23 @@
 package com.fantasylol.fantasy_api.controller;
 
-import com.fantasylol.fantasy_api.service.PandaScoreService;
+import com.fantasylol.fantasy_api.service.PlayerSyncService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/pandascore")
 public class PandaScoreController {
 
-    private final PandaScoreService pandaScoreService;
+    private final PlayerSyncService playerSyncService;
 
-    public PandaScoreController(PandaScoreService pandaScoreService) {
-        this.pandaScoreService = pandaScoreService;
+    public PandaScoreController(PlayerSyncService playerSyncService) {
+        this.playerSyncService = playerSyncService;
     }
 
-    @GetMapping("/importar-jugadores")
-    public String importarJugadores() {
+    @GetMapping("/sync/{ligaId}")
+    public String sync(@PathVariable Long ligaId) {
 
-        pandaScoreService.importarJugadores();
+        playerSyncService.sincronizarJugadores(ligaId);
 
-        return "Jugadores importados correctamente";
+        return "Jugadores sincronizados correctamente";
     }
 }

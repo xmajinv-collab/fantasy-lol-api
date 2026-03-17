@@ -18,7 +18,7 @@ public class PlayerSyncScheduler {
     @Scheduled(cron = "0 0 4 * * *")
     public void syncPlayers() {
 
-        playerSyncService.sincronizarJugadores();
+        playerSyncService.sincronizarJugadores(2L);
 
     }
 
